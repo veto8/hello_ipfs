@@ -224,6 +224,7 @@ __marimo__/
 
 # hello_ipfs — ask.sh runtime state (*.log and *.pid already covered above)
 .cid
+*.ipfskey
 
 # ipfs add writes one file per block into the working directory, named by CID
 Qm*

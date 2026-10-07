@@ -22,28 +22,45 @@ hello_ipfs/
 ```
 
 ## Tasks (`ask.sh`)
+Print-style: each task prints the command to run **on the host** — kubo is not
+installed in the agent container, and the agent never runs these tasks.
+
 | ID | Task |
 |----|------|
-| 1 | Serve — `python3 -m http.server` on port `8092` from `public/`, writes `.server.pid` |
-| 2 | Stop — kills the pid from task 1 |
-| 3 | Status — `ok` / `warn` whether the server is up |
-| 4 | Add — `ipfs add -r --only-hash --quiet public`, prints the root CID, saves it to `.cid` |
-| 5 | Publish — `ipfs name publish /ipfs/<cid from .cid>` |
-| 6 | Peer ID — `ipfs id -p` |
-| 7 | Clean — removes `.cid`, `.server.pid`, `.server.log` |
+| 1 | Install Kubo — install script + `PATH` for the host |
+| 2 | Serve — prints `python3 -m http.server 8092 --directory public` |
+| 3 | Add — `ipfs add -r --cid-version=1 public`, root CID saved to `.cid` |
+| 4 | Pin — `ipfs pin add <cid from .cid>` |
+| 5 | Key — `ipfs key gen <name> --type=ed25519` |
+| 6 | Key export — `ipfs key export/import`, backup file per key |
+| 7 | Publish — `ipfs name publish --key <name> /ipfs/<cid>` |
+| 8 | Resolve — `ipfs name resolve /ipns/<name>` |
+| 9 | Gateway config — `ipfs config` for own gateway (`PublicGateways`,
+    `NoFetch`, gateway/API binds, `Ipns.RepublishPeriod`) + DNSLink TXT |
+| 10 | Fallback URLs — the access list for `.cid`, to print on the page |
+| 11 | Clean — removes `.cid` and `*.ipfskey` |
 | 0 | Exit |
 
-The user starts the tasks — do not run `ask.sh` from the agent. Verify with
-`bash -n ask.sh` only.
+The user starts the tasks — do not run `ask.sh` from the agent.
 
 ## URLs
 - Local: `http://192.168.43.2:8092/` (from the agent container; never
   `127.0.0.1`, which is the agent's own namespace)
 - IPFS: `/ipfs/<cid>` — the path form, gateway-independent
+- Fallback order every published page carries: own gateway DNSLink name →
+  `/ipns/<name>` → `/ipfs/<cid>` → `ipfs://<cid>` → another node that pins it
+  (task 10 prints it)
 
 ## Runtime files (gitignored)
-`.cid`, `.server.pid`, `.server.log`. They live in the project root, are
-written by `ask.sh`, and are shared with the host via the bind mount.
+`.cid` (site root CID) and `*.ipfskey` (exported keys — the key **is** the
+published name; keep exports off-machine). They live in the project root, are
+written by the user running `ask.sh`, and are shared with the host via the
+bind mount.
+
+## Scope
+This repo is public and stays **technical only**: kubo/IPFS mechanics, config,
+tasks. Domain names, seller/marketplace architecture, and any deployment plan
+belong to the private repo (`gitlab/merkuro/ipfs.md`), not here.
 
 ## Conventions
 - **The page stays self-contained.** Inline `<style>`, inline `<svg>`, inline
