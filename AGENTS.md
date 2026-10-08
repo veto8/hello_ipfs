@@ -16,7 +16,8 @@ hello_ipfs/
 ├── ask.sh          — task runner (serve / add / publish / cleanup)
 ├── hello_ipfs.svg  — logo
 ├── public/
-│   └── index.html  — the page itself
+│   ├── index.html  — the published page itself
+│   └── test.html   — pinning experiment subject (see README)
 ├── LICENSE         — MIT
 └── README.md
 ```

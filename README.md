@@ -133,6 +133,27 @@ python3 -m http.server 8092 --directory public
 # then open http://localhost:8092/
 ```
 
+## Pinning practice
+
+A quick hands-on to see the availability rule (reachable ⟺ pinned):
+
+```sh
+ipfs add --cid-version=1 public/test.html   # note the bafy… CID
+ipfs pin add <cid>
+ipfs pin ls --type=recursive                # listed as pinned
+ipfs pin verify <cid>                       # ok: no missing blocks
+ipfs refs -r <cid>                          # every block the DAG needs
+# serve: http://127.0.0.1:8080/ipfs/<cid>/
+ipfs pin rm <cid>                           # page still loads (blocks cached)
+ipfs repo gc                                # now it 404s: NoFetch gateway
+ipfs pin add <cid>                          # back again
+```
+
+Why it behaves this way: the gateway runs `NoFetch true`, so it serves only
+the local repo. A pin marks blocks keep-forever; unpinning + `repo gc` is
+what actually removes them from the node. `public/test.html` is the
+experiment subject — `public/index.html` is the real site and is left alone.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
