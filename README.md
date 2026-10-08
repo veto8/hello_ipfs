@@ -124,6 +124,11 @@ added bafybeie3lkciw7b4qauz2niir6fv4i6rdp5u5kuodchrkuitnilpp4zg5a ipfs
 - Local gateway: http://127.0.0.1:8080/ipfs/bafybeicor3q2zndxy5vehl3467bhf2irghtayo42xw5gfpergic4olp4a4/
 - Public gateway: https://bafybeie3lkciw7b4qauz2niir6fv4i6rdp5u5kuodchrkuitnilpp4zg5a.ipfs.inbrowser.link/
 
+## Open via the key or your IPNS:
+```
+https://ipfs.io/ipns/k51qzi5uqu5djuqjghr8zjua890ezea8a3ir07hqubkeg42za3ta3i4up8l9lc
+https://k51qzi5uqu5djuqjghr8zjua890ezea8a3ir07hqubkeg42za3ta3i4up8l9lc.ipns.inbrowser.link/
+```
 Verify the contents:
 
 ```bash
