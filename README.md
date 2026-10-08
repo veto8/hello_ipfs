@@ -96,26 +96,33 @@ systemctl status ipfs
 Add the folder containing your site (here `public/`):
 
 ```bash
-ipfs add -r --cid-version=1 public
+su - kubo
+
+ipfs add -r --cid-version=1 /var/customers/webs/ipfs      # last line = new root
+ipfs pin add --recursive <new-root>                      # protect it
+ipfs name publish --key self /ipfs/<new-root>            # repoint nameplate
+ipfs name resolve /ipns/k51qzi5uqu5djuqjghr8zjua890ezea8a3ir07hqubkeg42za3ta3i4up8l9lc
 ```
 
 Example output:
 
 ```
-added bafkreiaz2uuo52cwwqi3z36ul4dhfefnumwhinvijaj65z5iezayy24b3y public/index.html
-added bafybeicor3q2zndxy5vehl3467bhf2irghtayo42xw5gfpergic4olp4a4 public
+added bafkreibj25a6i7ky46w7lidlkfhwj44zdld35blrfnjks5earv7cajecnm ipfs/hello.html
+added bafkreih72h2u4ypi5trhd5bmyqebmlqeyjd2v75lkyl7ur5tyhdecaokra ipfs/index.html
+bafybeicor3q2zndxy5vehl3467bhf2irghtayo42xw5gfpergic4olp4a4
 ```
 
 The **last** CID is the site root:
 
 ```
-bafybeicor3q2zndxy5vehl3467bhf2irghtayo42xw5gfpergic4olp4a4
+added bafybeie3lkciw7b4qauz2niir6fv4i6rdp5u5kuodchrkuitnilpp4zg5a ipfs 
+
 ```
 
 ### Open it
 
 - Local gateway: http://127.0.0.1:8080/ipfs/bafybeicor3q2zndxy5vehl3467bhf2irghtayo42xw5gfpergic4olp4a4/
-- Public gateway: https://bafybeicor3q2zndxy5vehl3467bhf2irghtayo42xw5gfpergic4olp4a4.ipfs.dweb.link/
+- Public gateway: https://bafybeie3lkciw7b4qauz2niir6fv4i6rdp5u5kuodchrkuitnilpp4zg5a.ipfs.inbrowser.link/
 
 Verify the contents:
 
@@ -160,14 +167,56 @@ experiment subject — `public/index.html` is the real site and is left alone.
 ## Commands 
 ### List all keys 
 ```
-sudo -u kubo ipfs key list -l
+su - kubo```
+ipfs key list -l
 ```
 
 
 ### List all pins
 ```
-sudo -u kubo ipfs pin ls 
+su - kubo 
+ipfs pin ls 
 ```
+
+## Day notes — republish, pin, IPNS (2026-10-08)
+
+- **Content address, not location.** A CID is a hash wrapper (UnixFS node); a
+  folder CID is the hash of the *directory index* (`name -> child CID`), so one
+  folder CID exposes the whole tree. There is no path->CID registry — you
+  cannot ask "which file made this CID?". Restore content as files with
+  `ipfs get /ipfs/<cid>`, or find the source by re-hashing candidates
+  (`ipfs add -rqn --only-hash --cid-version=1 <dir>` and compare roots).
+- **`add` != `pin`.** `ipfs add` writes *loose* blocks; only
+  `ipfs pin add --recursive` protects them from `repo gc`. Old /ipfs/<cid>
+  URLs stay alive while their blocks are pinned on any node; they die only
+  after `pin rm` + `repo gc` on every holder.
+- **The name never moves — the pointer does.** The `self` key is the identity
+  (`/ipns/k51q...`), fixed for the lifetime of the keystore. Publishing moves
+  only the target: `ipfs name publish --key self /ipfs/<cid>`;
+  `ipfs name resolve /ipns/<key>` reads it back. Never lose the key
+  (`ipfs key export`).
+- **Publish can hang behind NAT** because the DHT put times out. Wait ~90 s;
+  if still stuck, Ctrl-C and publish with `--allow-offline` (record stored
+  locally, daemon re-publishes to the DHT on its own schedule).
+- **Permanence.** A recursive pin on this node plus at least one other node
+  pinning the same CID. The "URL never changes" layer is DNSLink:
+  `dnslink=/ipns/<key>` TXT — the record is written once; every edit only
+  moves the IPNS hop.
+- **Ports.** Only the swarm port (4001/tcp) is public by default; API (5001)
+  and the HTTP gateway (8080) bind localhost. Gateway with `NoFetch=true`
+  serves only what the local repo holds.
+- **Out-of-band check.** Same bytes anywhere -> same CID (deduplication). On
+  2026-10-08 the repo's `public/index.html` did **not** match the live source
+  (`/var/customers/webs/ipfs`) — keep the two mirrors byte-identical so a
+  rebuild reproduces the same CID.
+- **Republish log (host source `/var/customers/webs/ipfs`, key `self`):**
+
+  | step | root CID | files |
+  |------|----------|-------|
+  | before | `bafybeicor3q2...olp4a4` | index.html |
+  | after edit | `bafybeifs7g...egmkm` | index.html |
+  | added hello.html | `bafybeie3lk...zg5a` | hello.html, index.html |
+  | latest | `bafybeig7uj...gtum` | hello.html, index.html |
 
 ## License
 
