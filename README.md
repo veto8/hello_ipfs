@@ -62,7 +62,9 @@ After=network.target
 StartLimitIntervalSec=0
 
 [Service]
-User=root
+User=kubo
+Group=kubo
+Environment=IPFS_PATH=/var/lib/ipfs/.ipfs
 ExecStart=/usr/local/bin/ipfs daemon
 ExecReload=/usr/local/bin/ipfs daemon
 TimeoutStopSec=5s
@@ -153,6 +155,19 @@ Why it behaves this way: the gateway runs `NoFetch true`, so it serves only
 the local repo. A pin marks blocks keep-forever; unpinning + `repo gc` is
 what actually removes them from the node. `public/test.html` is the
 experiment subject — `public/index.html` is the real site and is left alone.
+
+
+## Commands 
+### List all keys 
+```
+sudo -u kubo ipfs key list -l
+```
+
+
+### List all pins
+```
+sudo -u kubo ipfs pin ls 
+```
 
 ## License
 
