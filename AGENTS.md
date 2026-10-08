@@ -18,7 +18,7 @@ hello_ipfs/
 ├── public/
 │   ├── index.html  — the published page itself
 │   └── test.html   — pinning experiment subject (see README)
-├── LICENSE         — MIT
+├── LICENSE         — GPL-3.0
 └── README.md
 ```
 

@@ -156,4 +156,4 @@ experiment subject — `public/index.html` is the real site and is left alone.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+GPL-3.0 — see [LICENSE](LICENSE).
